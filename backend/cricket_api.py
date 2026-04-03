@@ -3,10 +3,14 @@ from config import settings
 from mock_data import get_mock_matches, get_mock_match_detail, generate_ball_by_ball_data
 
 
+_matches_cache = []
+
 async def get_current_matches():
     """Fetch current/live matches from CricketData.org API. (1 API call)"""
+    global _matches_cache
     if settings.USE_MOCK_DATA or not settings.CRICKET_API_KEY:
-        return get_mock_matches()
+        _matches_cache = get_mock_matches()
+        return _matches_cache
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
@@ -17,7 +21,9 @@ async def get_current_matches():
             resp.raise_for_status()
             data = resp.json()
             if data.get("status") == "success":
-                return data.get("data", [])
+                matches = data.get("data", [])
+                _matches_cache = matches
+                return matches
             return get_mock_matches()
     except Exception:
         return get_mock_matches()
@@ -25,9 +31,8 @@ async def get_current_matches():
 
 async def get_match_info(match_id: str):
     """
-    Fetch detailed match info and scorecard. (1 API call per over)
-    This is the ONLY endpoint we poll during a live match.
-    Each call returns full scorecard, so we diff to find new deliveries.
+    Fetch detailed match info. 
+    If the API fails, we check the _matches_cache for partial data.
     """
     if settings.USE_MOCK_DATA or not settings.CRICKET_API_KEY:
         return get_mock_match_detail(match_id)
@@ -42,8 +47,16 @@ async def get_match_info(match_id: str):
             data = resp.json()
             if data.get("status") == "success":
                 return data.get("data", {})
+            
+            # API failure: check cache
+            for m in _matches_cache:
+                if m["id"] == match_id:
+                    return m
             return get_mock_match_detail(match_id)
     except Exception:
+        for m in _matches_cache:
+            if m["id"] == match_id:
+                return m
         return get_mock_match_detail(match_id)
 
 
