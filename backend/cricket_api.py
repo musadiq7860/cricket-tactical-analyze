@@ -70,10 +70,10 @@ async def get_match_scorecard(match_id: str):
         return get_mock_match_detail(match_id)
 
 
-async def get_ball_by_ball(match_id: str):
+async def get_ball_by_ball(match_id: str, match_info: dict = None):
     """Fetch ball-by-ball data for replay/demo mode only."""
     if settings.USE_MOCK_DATA or not settings.CRICKET_API_KEY:
-        return generate_ball_by_ball_data(match_id)
+        return generate_ball_by_ball_data(match_id, match_info)
 
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:

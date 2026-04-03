@@ -113,15 +113,24 @@ FIELD_POSITIONS = [
 ]
 
 
-def generate_ball_by_ball_data(match_id: str, total_overs: int = 20):
+def generate_ball_by_ball_data(match_id: str, real_match_info: dict = None, total_overs: int = 20):
     """Generate realistic ball-by-ball mock data for a T20 match."""
     balls = []
-    match_info = next((m for m in MOCK_MATCHES if m["id"] == match_id), MOCK_MATCHES[0])
-    batting_team = match_info["teams"][0]
-    bowling_team = match_info["teams"][1]
+    
+    match_info = real_match_info or next((m for m in MOCK_MATCHES if m["id"] == match_id), MOCK_MATCHES[0])
+    teams = match_info.get("teams", [])
+    batting_team = teams[0] if len(teams) > 0 else "Team A"
+    bowling_team = teams[1] if len(teams) > 1 else "Team B"
 
-    batsmen_pool = BATSMEN.get(match_id, BATSMEN["mock_ipl_1"])
-    bowlers_pool = BOWLERS.get(match_id, BOWLERS["mock_ipl_1"])
+    # Use predefined mock pools if it's our hardcoded mock ID, else generate realistic placeholders
+    if match_id in BATSMEN:
+        batsmen_pool = BATSMEN[match_id]
+        bowlers_pool = BOWLERS[match_id]
+    else:
+        bat_abbr = batting_team.split()[0] if batting_team else "BAT"
+        bowl_abbr = bowling_team.split()[0] if bowling_team else "BOWL"
+        batsmen_pool = [{"name": f"{bat_abbr} Batter {i}", "r": 0, "b": 0, "4s": 0, "6s": 0, "sr": 0.0, "batting": True} for i in range(1, 12)]
+        bowlers_pool = [{"name": f"{bowl_abbr} Bowler {i}", "o": 0, "m": 0, "r": 0, "w": 0, "eco": 0.0} for i in range(1, 6)]
 
     current_batsman_idx = 0
     non_striker_idx = 1

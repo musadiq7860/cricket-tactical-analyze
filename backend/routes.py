@@ -34,19 +34,22 @@ async def match_stream(match_id: str, mode: str = "auto"):
     SSE endpoint: streams match updates with AI tactical insights.
 
     Polling strategy (over-by-over):
-    - Mock/demo mode: replays all ball-by-ball data from mock generator
-    - Live mode: polls scorecard API ONCE PER OVER (~20 calls for T20, ~50 for ODI)
-    - 2 matches/day = max ~40-100 API calls, well within free tier (100/day)
-
-    Query params:
-    - mode: "auto" (default), "live", "demo"
+    - Mock mode: replays all ball-by-ball data from mock generator
+    - Complete match: fetches full historical ball-by-ball data and replays it
+    - Live match: polls scorecard API ONCE PER OVER (~20 calls for T20)
     """
-    is_live = mode == "live" or (mode == "auto" and not settings.USE_MOCK_DATA)
+    match = await get_match_info(match_id)
+    status = match.get("status", "").lower() if match else "live"
+    is_complete = "won" in status or "tied" in status or "draw" in status or "complete" in status or "abandoned" in status or "stumps" in status
 
-    if is_live:
-        return EventSourceResponse(_live_over_by_over_generator(match_id))
+    force_mock = mode == "demo"
+    if force_mock or settings.USE_MOCK_DATA:
+        return EventSourceResponse(_historical_replay_generator(match_id, mode="demo"))
+
+    if is_complete:
+        return EventSourceResponse(_historical_replay_generator(match_id, mode="historical"))
     else:
-        return EventSourceResponse(_demo_replay_generator(match_id))
+        return EventSourceResponse(_live_over_by_over_generator(match_id, match))
 
 
 async def _live_over_by_over_generator(match_id: str):
@@ -221,10 +224,11 @@ async def _live_over_by_over_generator(match_id: str):
         }
 
 
-async def _demo_replay_generator(match_id: str):
+async def _historical_replay_generator(match_id: str, mode: str = "demo"):
     """
-    DEMO/MOCK MODE: Replays ball-by-ball mock data with AI insights.
-    No API calls — uses generated mock data.
+    DEMO/HISTORICAL MODE: Replays ball-by-ball data with AI insights.
+    If mode='demo' or API disabled, uses mock data. 
+    Otherwise uses real historical data from API.
     """
     match = await get_match_info(match_id)
     match_name = match.get("name", f"Match {match_id}") if match else f"Match {match_id}"
@@ -236,11 +240,11 @@ async def _demo_replay_generator(match_id: str):
         "data": json.dumps({
             "session_id": session_id,
             "match_name": match_name,
-            "mode": "demo",
+            "mode": mode,
         }),
     }
 
-    balls = await get_ball_by_ball(match_id)
+    balls = await get_ball_by_ball(match_id, match)
     state = MatchState(match_id=match_id)
 
     if match:
