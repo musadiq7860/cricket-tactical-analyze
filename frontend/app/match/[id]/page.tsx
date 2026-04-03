@@ -40,6 +40,12 @@ export default function MatchPage() {
       {/* Match Header Bar */}
       <div className={styles.matchBar}>
         <div className={styles.matchBarLeft}>
+          <a href="/" className={styles.backButton}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back</span>
+          </a>
           <h1 className={styles.matchName}>{matchName}</h1>
           <div className={styles.matchMeta}>
             <span className={`badge badge-${matchFormat.toLowerCase() === 't20' ? 't20' : matchFormat.toLowerCase() === 'odi' ? 'odi' : 'test'}`}>

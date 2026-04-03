@@ -118,9 +118,17 @@ def generate_ball_by_ball_data(match_id: str, real_match_info: dict = None, tota
     balls = []
     
     match_info = real_match_info or next((m for m in MOCK_MATCHES if m["id"] == match_id), MOCK_MATCHES[0])
-    teams = match_info.get("teams", [])
-    batting_team = teams[0] if len(teams) > 0 else "Team A"
-    bowling_team = teams[1] if len(teams) > 1 else "Team B"
+    
+    # Try to extract from CricketData.org format (teamInfo) or mock format (teams)
+    batting_team = "Team A"
+    bowling_team = "Team B"
+    
+    if "teamInfo" in match_info and len(match_info["teamInfo"]) >= 2:
+        batting_team = match_info["teamInfo"][0].get("name", "Team A")
+        bowling_team = match_info["teamInfo"][1].get("name", "Team B")
+    elif "teams" in match_info and len(match_info["teams"]) >= 2:
+        batting_team = match_info["teams"][0]
+        bowling_team = match_info["teams"][1]
 
     # Use predefined mock pools if it's our hardcoded mock ID, else generate realistic placeholders
     if match_id in BATSMEN:
@@ -210,10 +218,23 @@ def get_mock_matches():
 
 
 def get_mock_match_detail(match_id: str):
-    """Return detailed mock data for a specific match."""
+    """Return detailed mock data for a specific match, or generic fallback."""
     match = next((m for m in MOCK_MATCHES if m["id"] == match_id), None)
+    
     if not match:
-        return None
+        # Instead of returning None, return a generic placeholder
+        # so the UI doesn't crash or show mismatched hardcoded games.
+        return {
+            "id": match_id,
+            "name": f"Match {match_id[:8]}",
+            "status": "Unknown Status",
+            "venue": "Unknown Venue",
+            "matchType": "T20",
+            "teams": ["Team A", "Team B"],
+            "score": [],
+            "batting": [{"name": "Batter 1", "r": 0, "b": 0, "4s": 0, "6s": 0, "sr": 0.0, "batting": True}],
+            "bowling": [{"name": "Bowler 1", "o": 0.0, "m": 0, "r": 0, "w": 0, "eco": 0.0}]
+        }
 
     batsmen = BATSMEN.get(match_id, BATSMEN["mock_ipl_1"])
     bowlers = BOWLERS.get(match_id, BOWLERS["mock_ipl_1"])
