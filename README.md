@@ -1,3 +1,13 @@
+---
+title: Cricket Tactical Analyzer
+emoji: 🏏
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+app_port: 7860
+---
+
 # 🏏 CricketAI — Real-Time Tactical Match Analyzer
 
 AI-powered real-time cricket match analysis with tactical insights, live scoring, and match momentum visualization.
