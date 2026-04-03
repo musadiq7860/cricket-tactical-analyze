@@ -1,0 +1,234 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.poweredBy {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.connectionStatus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.connected {
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(6, 214, 160, 0.2);
+}
+
+.disconnected {
+  background: var(--accent-coral-dim);
+  color: var(--accent-coral);
+  border: 1px solid rgba(239, 71, 111, 0.2);
+}
+
+.connDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+/* Insights List */
+.insightsList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  scroll-behavior: smooth;
+}
+
+/* Empty State */
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-2xl) var(--space-lg);
+  text-align: center;
+}
+
+.emptyIcon {
+  color: var(--text-muted);
+  opacity: 0.4;
+  animation: float 3s ease-in-out infinite;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+/* Insight Card */
+.insightCard {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  animation: fadeInUp 0.3s ease-out both;
+  transition: border-color var(--transition-base);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  min-height: fit-content;
+}
+
+.insightCard:hover {
+  border-color: var(--border-primary);
+}
+
+.insightCard.streaming {
+  border-color: var(--accent-cyan-glow);
+  box-shadow: var(--shadow-glow-cyan);
+}
+
+.insightHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(15, 23, 42, 0.5);
+}
+
+.insightMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.insightIcon {
+  font-size: 14px;
+}
+
+.insightCategory {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.catBowling {
+  background: var(--accent-coral-dim);
+  color: var(--accent-coral);
+}
+
+.catBatting {
+  background: var(--accent-cyan-dim);
+  color: var(--accent-cyan);
+}
+
+.catField {
+  background: var(--accent-amber-dim);
+  color: var(--accent-amber);
+}
+
+.catMomentum {
+  background: var(--accent-purple-dim);
+  color: var(--accent-purple);
+}
+
+.catWicket {
+  background: var(--accent-coral-dim);
+  color: var(--accent-coral);
+}
+
+.catDefault {
+  background: var(--accent-blue-dim);
+  color: var(--accent-blue);
+}
+
+.insightOver {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.insightBody {
+  padding: var(--space-md);
+}
+
+.insightText {
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #cbd5e1;
+  word-wrap: break-word;
+}
+
+.insightText strong,
+.insightText b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Streaming */
+.streamingIndicator {
+  display: flex;
+  gap: 3px;
+  padding: 4px 0;
+}
+
+.streamDot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+}
+
+.streamDot:nth-child(1) { animation: livePulse 1s ease-in-out infinite 0s; }
+.streamDot:nth-child(2) { animation: livePulse 1s ease-in-out infinite 0.2s; }
+.streamDot:nth-child(3) { animation: livePulse 1s ease-in-out infinite 0.4s; }
+
+.cursor {
+  color: var(--accent-cyan);
+  animation: livePulse 0.8s ease-in-out infinite;
+  font-weight: 300;
+}
