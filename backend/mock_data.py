@@ -1,5 +1,9 @@
 import random
 import uuid
+import collections
+import zipfile
+import os
+import json
 from datetime import datetime, timedelta
 
 
@@ -113,8 +117,97 @@ FIELD_POSITIONS = [
 ]
 
 
+
+def extract_cricsheet_balls():
+    CRICSHEET_ZIP = "psl_json.zip"
+    if not os.path.exists(CRICSHEET_ZIP):
+        return None
+    try:
+        with zipfile.ZipFile(CRICSHEET_ZIP, 'r') as z:
+            files = [f for f in z.namelist() if f.endswith('.json')]
+            if not files: return None
+            target_file = random.choice(files)
+            
+            data = json.loads(z.read(target_file))
+            balls = []
+            
+            innings = data.get('innings', [])
+            if not innings: return None
+            
+            inning = innings[0]
+            batting_team = inning.get('team', 'Team A')
+            
+            teams = data.get('info', {}).get('teams', [])
+            bowling_team = "Team B"
+            if len(teams) >= 2:
+                bowling_team = teams[1] if teams[0] == batting_team else teams[0]
+
+            total_runs = 0
+            total_wickets = 0
+            partnership_runs = 0
+            partnership_balls = 0
+            
+            for over_data in inning.get('overs', []):
+                over_num = over_data.get('over', 0)
+                
+                for ball_num, delivery in enumerate(over_data.get('deliveries', []), 1):
+                    runs_dict = delivery.get('runs', {})
+                    runs = runs_dict.get('batter', 0)
+                    extras = runs_dict.get('extras', 0)
+                    total_delivery_runs = runs + extras
+                    
+                    is_wicket = 'wickets' in delivery
+                    is_extra = extras > 0
+                    
+                    ball_data = {
+                        "id": str(uuid.uuid4()),
+                        "over": over_num,
+                        "ball": ball_num,
+                        "over_ball": f"{over_num}.{ball_num}",
+                        "batsman": delivery.get('batter', 'Batter'),
+                        "bowler": delivery.get('bowler', 'Bowler'),
+                        "runs": runs,
+                        "is_wicket": is_wicket,
+                        "is_boundary": runs in [4, 6],
+                        "is_extra": is_extra,
+                        "extra_type": list(delivery.get('extras', {}).keys())[0] if is_extra else None,
+                        "shot_type": "played",
+                        "dismissal_type": delivery['wickets'][0].get('kind') if is_wicket else None,
+                        "field_position": "field",
+                        "batting_team": batting_team,
+                        "bowling_team": bowling_team,
+                        "total_runs": total_runs + total_delivery_runs,
+                        "total_wickets": total_wickets + (1 if is_wicket else 0),
+                        "current_rr": round((total_runs + total_delivery_runs) / max((over_num * 6 + ball_num) / 6, 0.1), 2),
+                        "partnership": {
+                            "runs": partnership_runs + (0 if is_wicket else total_delivery_runs),
+                            "balls": partnership_balls + 1,
+                        },
+                    }
+                    
+                    total_runs += total_delivery_runs
+                    if is_wicket:
+                        total_wickets += 1
+                        partnership_runs = 0
+                        partnership_balls = 0
+                    else:
+                        partnership_runs += total_delivery_runs
+                        partnership_balls += 1
+                        
+                    balls.append(ball_data)
+            return balls
+    except Exception as e:
+        print(f"Cricsheet extraction error: {e}")
+        return None
+
 def generate_ball_by_ball_data(match_id: str, real_match_info: dict = None, total_overs: int = 20):
     """Generate realistic ball-by-ball mock data for a T20 match."""
+    # Tier 2 Fallback: Cricsheet Real Data
+    cricsheet_data = extract_cricsheet_balls()
+    if cricsheet_data:
+        return cricsheet_data
+
+    # Tier 3 Fallback: Synthetic Generator
     balls = []
     
     match_info = real_match_info or next((m for m in MOCK_MATCHES if m["id"] == match_id), MOCK_MATCHES[0])

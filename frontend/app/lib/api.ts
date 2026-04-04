@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://musadiq7860-cricket-tactical-analyzer.hf.space';
 
 export interface Match {
   id: string;
