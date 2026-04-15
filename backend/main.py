@@ -26,7 +26,7 @@ async def health_check():
     return {
         "status": "ok",
         "mock_mode": settings.USE_MOCK_DATA,
-        "cricket_api_configured": bool(settings.CRICKET_API_KEY),
+        "cricket_api_configured": bool(settings.ENTITY_SPORT_API_TOKEN),
         "groq_api_configured": bool(settings.GROQ_API_KEY),
         "supabase_configured": bool(settings.SUPABASE_URL and settings.SUPABASE_KEY),
     }
